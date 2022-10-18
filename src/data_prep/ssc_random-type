@@ -1,0 +1,10 @@
+dehumanization	threatening	support	derogation	animosity
+threatening	support	dehumanization	animosity	derogation
+threatening	dehumanization	derogation	support	animosity
+animosity	threatening	support	dehumanization	derogation
+derogation	animosity	dehumanization	support	threatening
+derogation	support	animosity	dehumanization	threatening
+animosity	support	derogation	threatening	dehumanization
+animosity	threatening	dehumanization	derogation	support
+derogation	threatening	animosity	support	dehumanization
+animosity	support	derogation	dehumanization	threatening

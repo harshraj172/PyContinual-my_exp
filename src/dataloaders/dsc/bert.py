@@ -21,26 +21,34 @@ import math
 #            'Digital_Music','Clothing_Shoes_and_Jewelry','Cell_Phones_and_Accessories','CDs_and_Vinyl',
 #            'Books','Beauty','Baby','Automotive','Apps_for_Android','Amazon_Instant_Video']
 
-domains = ['Video_Games','Toys_and_Games','Tools_and_Home_Improvement','Sports_and_Outdoors','Pet_Supplies',
-           'Patio_Lawn_and_Garden','Office_Products','Musical_Instruments','Movies_and_TV',
-           'Kindle_Store']
+# domains = ['Video_Games','Toys_and_Games','Tools_and_Home_Improvement','Sports_and_Outdoors','Pet_Supplies',
+#            'Patio_Lawn_and_Garden','Office_Products','Musical_Instruments','Movies_and_TV',
+#            'Kindle_Store']
 
-datasets = [ './dat/dsc/'+domain for domain in domains]
+domains = ['derogation', 'animosity', 'dehumanization', 'threatening', 'support']
+
+# domains = ['other.glorification', 'wc', 'bla.man', 'old.people', 'notargetrecorded', 'asi.chin', 'bla',
+#  'arab', 'bla.wom', 'trans', 'indig.wom', 'indig', 'for', 'gay.wom', 'asi.east', 'asylum', 'eastern.europe', 'hispanic', 'trav', 'jew', 'ref',
+#  'asi.pak', 'bis', 'nazis', 'mus.wom', 'asi.south', 'gendermin', 'hitler', 'immig', 'asi.man', 'wom', 'non.white.wom', 'non.white', 'gay.man',
+#  'mus', 'mixed.race', 'asi', 'asi.wom', 'other.national', 'other.religion', 'pol', 'african', 'dis', 'russian', 'gay', 'lgbtq', 'ethnic.minority']
 
 def get(logger=None,args=None):
+    datasets = [ f'./dat/ssc/{args.domain_type}/'+domain for domain in domains]
     data={}
     taskcla=[]
 
     # Others
-    f_name = 'dsc_random_10'
+    f_name = f"./data_prep/ssc_random-{args.domain_type.split('-')[-1]}"
 
     with open(f_name,'r') as f_random_seq:
         random_sep = f_random_seq.readlines()[args.idrandom].split()
 
+    args.ntasks = len(domains)
+    
     print('random_sep: ',random_sep)
     print('domains: ',domains)
-
-
+    print('ntasks: ',args.ntasks)
+    
     for t in range(args.ntasks):
         dataset = datasets[domains.index(random_sep[t])]
 
@@ -53,6 +61,7 @@ def get(logger=None,args=None):
 
         processor = data_utils.DscProcessor()
         label_list = processor.get_labels()
+        print(f"BERT Model : {args.bert_model}")
         tokenizer = ABSATokenizer.from_pretrained(args.bert_model)
         train_examples = processor.get_train_examples(dataset)
 

@@ -59,7 +59,8 @@ class Appr(ApprBase):
 
         best_loss=np.inf
         best_model=utils.get_model(self.model)
-
+        self.args.num_train_epochs = 5
+        print(f"Num training epochs modified to = {self.args.num_train_epochs}")
         # Loop epochs
         for e in range(int(self.args.num_train_epochs)):
             # Train

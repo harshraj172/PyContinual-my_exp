@@ -284,7 +284,7 @@ class Appr(object):
                 count+=np.prod(m_value.size()).item()
 
         reg/=count
-
+        print()
         return self.ce(outputs,targets)+self.lamb*reg,reg
 
 

@@ -19,7 +19,7 @@ import utils
 # from apex import amp
 
 sys.path.append("./approaches/base/")
-from bert_adapter_mask_base import Appr as ApprBase
+from approaches.base.bert_adapter_mask_base import Appr as ApprBase
 from my_optimization import BertAdam
 
 
@@ -28,7 +28,6 @@ class Appr(ApprBase):
     def __init__(self,model,logger,taskcla, args=None):
         super().__init__(model=model,logger=logger,taskcla=taskcla,args=args)
         print('BERT ADAPTER CAPSULE MASK NCL')
-
         return
 
     def train(self,t,train,valid,num_train_steps,train_data,valid_data):
@@ -51,7 +50,8 @@ class Appr(ApprBase):
 
         best_loss=np.inf
         best_model=utils.get_model(self.model)
-
+        self.args.num_train_epochs = 5
+        print(f"Num training epochs modified to - {self.args.num_train_epochs}")
         # Loop epochs
         for e in range(int(self.args.num_train_epochs)):
             # Train

@@ -73,9 +73,6 @@ if 'net' in locals(): net = net.to(device)
 if 'net_old' in locals(): net_old = net_old.to(device)
 appr=import_modules.approach.Appr(net,logger=logger,taskcla=taskcla,args=args)
 
-args.resume_from_aux_file = args.base_resume_from_aux_file + 'steps'+str(args.resume_from_task-1)
-args.resume_from_file = args.base_resume_from_file + 'steps'+str(args.resume_from_task-1)
-
 if not args.eval_each_step:
     resume_checkpoint(appr,net)
 
@@ -105,22 +102,18 @@ if args.print_report:
 # print('-'*100)
 
 
-# Path to save the model
-base_model_path = args.saved_model_dir + args.domain_type + '/' + args.baseline + '/'
-base_aux_model_path = args.saved_model_dir + args.domain_type + '/' + args.baseline + '/' + "aux/"
-os.makedirs(base_model_path, exist_ok=True)
-os.makedirs(base_aux_model_path, exist_ok=True)
 
 # ----------------------------------------------------------------------
 # Start Training.
 # ----------------------------------------------------------------------
 
 for t,ncla in taskcla:
-    
+
+
     if args.eval_each_step:
-        args.resume_from_aux_file = args.base_resume_from_aux_file + 'steps'+str(t)
-        args.resume_from_file = args.base_resume_from_file + 'steps'+str(t)
-        resume_checkpoint(appr,net)
+        args.resume_from_aux_file = base_resume_from_aux_file + 'steps'+str(t)
+        args.resume_from_file = base_resume_from_file + 'steps'+str(t)
+        resume_checkpoint(appr)
 
     # print('*'*100)
     # print('Task {:2d} ({:s})'.format(t,data[t]['name']))
@@ -153,7 +146,7 @@ for t,ncla in taskcla:
         valid=data[t]['valid']
         num_train_steps=data[t]['num_train_steps']
         task=t
-    if len(train)==0 or len(valid)==0: continue
+
 
     if  args.task == 'asc': #special setting
         if 'XuSemEval' in data[t]['name']:
@@ -181,6 +174,7 @@ for t,ncla in taskcla:
 
     logger.info('Start Training and Set the clock')
     tstart=time.time()
+
 
     if not args.eval_only:
         if args.task in extraction_tasks:
@@ -214,8 +208,8 @@ for t,ncla in taskcla:
         exit()
 
     if args.save_each_step:
-        args.model_path = base_model_path + 'steps' + str(t)
-        args.aux_model_path = base_aux_model_path + 'steps' + str(t)
+        args.model_path = base_model_path + 'steps'+str(t)
+        args.aux_model_path = base_aux_model_path + 'steps'+str(t)
 
     if args.save_model:
         print('save model ')
@@ -234,7 +228,7 @@ for t,ncla in taskcla:
 
 
 
-        if appr.aux_model!=None:
+        if args.aux_net:
             torch.save({
                         'model_state_dict': appr.aux_model.state_dict(),
                         }, args.aux_model_path)
@@ -251,18 +245,12 @@ for t,ncla in taskcla:
     # if args.unseen and args.eval_each_step: #we want to test every one for unseen
     #     test_set = args.ntasks
     # else:
-        ## where lower res is coming..
-        # if t==args.ntasks-1:
-        #     test_set = range(t+1)
-        # else:
-        #     continue    
-        
+    #     test_set = t+1
     test_set = args.ntasks
-        
     for u in range(test_set):
-        
+
         test=data[u]['test']
-        if len(test) == 0: continue
+
         if args.multi_gpu and args.distributed:
             test_sampler = DistributedSampler(test)
             test_dataloader = DataLoader(test, sampler=test_sampler, batch_size=args.eval_batch_size)
@@ -292,50 +280,43 @@ for t,ncla in taskcla:
             acc[t,u]=test_acc
             lss[t,u]=test_loss
             f1_macro[t,u]=test_f1_macro
-            
-#             # Save
-#             print('Save at '+args.output)
-#             np.savetxt(args.output + 'progressive.acc',acc,'%.4f',delimiter='\t')
-#             np.savetxt(args.output + 'progressive.f1_macro',f1_macro,'%.4f',delimiter='\t')
 
-#             # Done
-#             print('*'*100)
-#             print('Accuracies =')
-#             for i in range(acc.shape[0]):
-#                 print('\t',end='')
-#                 for j in range(acc.shape[1]):
-#                     print('{:5.1f}% '.format(100*acc[i,j]),end='')
-#                 print()
-#             print('*'*100)
-#             print('Done!')
+            # Save
+            print('Save at '+args.output)
+            np.savetxt(args.output + 'progressive.acc',acc,'%.4f',delimiter='\t')
+            np.savetxt(args.output + 'progressive.f1_macro',f1_macro,'%.4f',delimiter='\t')
 
-#             print('[Elapsed time = {:.1f} h]'.format((time.time()-tstart)/(60*60)))
+            # Done
+            print('*'*100)
+            print('Accuracies =')
+            for i in range(acc.shape[0]):
+                print('\t',end='')
+                for j in range(acc.shape[1]):
+                    print('{:5.1f}% '.format(100*acc[i,j]),end='')
+                print()
+            print('*'*100)
+            print('Done!')
 
-
-#             with open(performance_output,'w') as file, open(f1_macro_output,'w') as f1_file:
-
-#                 if args.baseline=='one':
-#                     for j in range(acc.shape[1]):
-#                         file.writelines(str(acc[j][j]) + '\n')
-#                         f1_file.writelines(str(f1_macro[j][j]) + '\n')
-#                 else:
-#                     for j in range(acc.shape[1]):
-#                         file.writelines(str(acc[-1][j]) + '\n')
-#                         f1_file.writelines(str(f1_macro[-1][j]) + '\n')
+            print('[Elapsed time = {:.1f} h]'.format((time.time()-tstart)/(60*60)))
 
 
-#             with open(performance_output_forward,'w') as file, open(f1_macro_output_forward,'w') as f1_file:
-#                 if not args.baseline=='one':
-#                     for j in range(acc.shape[1]):
-#                         file.writelines(str(acc[j][j]) + '\n')
-#                         f1_file.writelines(str(f1_macro[j][j]) + '\n')
-    
-    
-    # My Save
-    os.makedirs(f"{args.output_dir}{args.scenario}/{args.domain_type}/{args.baseline}", exist_ok=True)
-    np.savetxt(f"{args.output_dir}{args.scenario}/{args.domain_type}/{args.baseline}/accuracy-{t}", acc)
-    np.savetxt(f"{args.output_dir}{args.scenario}/{args.domain_type}/{args.baseline}/f1_macro-{t}",f1_macro)
-    np.savetxt(f"{args.output_dir}{args.scenario}/{args.domain_type}/{args.baseline}/loss-{t}", lss)
-        
-# ########################################################################################################################
+            with open(performance_output,'w') as file, open(f1_macro_output,'w') as f1_file:
 
+                if args.baseline=='one':
+                    for j in range(acc.shape[1]):
+                        file.writelines(str(acc[j][j]) + '\n')
+                        f1_file.writelines(str(f1_macro[j][j]) + '\n')
+                else:
+                    for j in range(acc.shape[1]):
+                        file.writelines(str(acc[-1][j]) + '\n')
+                        f1_file.writelines(str(f1_macro[-1][j]) + '\n')
+
+
+            with open(performance_output_forward,'w') as file, open(f1_macro_output_forward,'w') as f1_file:
+                if not args.baseline=='one':
+                    for j in range(acc.shape[1]):
+                        file.writelines(str(acc[j][j]) + '\n')
+                        f1_file.writelines(str(f1_macro[j][j]) + '\n')
+
+
+########################################################################################################################

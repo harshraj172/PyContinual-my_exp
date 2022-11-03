@@ -26,13 +26,13 @@ export HF_DATASETS_CACHE='./dataset_cache'
 for id in 0
 do
     python run-2.py \
-        --domain_type 'domain-type' \
+        --domain_type 'domain-target' \
 		--bert_model 'bert-base-uncased' \
 		--backbone bert_adapter \
-		--baseline ctr \
+		--baseline b-cl \
 		--task dsc \
 		--eval_batch_size 128 \
-		--train_batch_size 44 \
+		--train_batch_size 64 \
 		--scenario til_classification \
 		--idrandom 0  \
         --output_dir 'res/' \

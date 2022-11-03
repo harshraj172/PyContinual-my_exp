@@ -102,19 +102,29 @@ if args.print_report:
 # print('-'*100)
 
 
-
+acc, lss, f1_macro = np.array([[0.0]*args.ntasks]*args.ntasks), np.array([[0.0]*args.ntasks]*args.ntasks), np.array([[0.0]*args.ntasks]*args.ntasks)
+# # impute if len(test/valid) is 0 
+# for t,ncla in taskcla:
+#     if len(data[t]['test'])==0 and len(data[t]['valid'])!=0:
+#         data[t]['test'] = data[t]['valid']
+#     elif len(data[t]['valid'])==0 and len(data[t]['test'])!=0:
+#         data[t]['valid'] = data[t]['test']
+#     elif len(data[t]['valid'])==0 and len(data[t]['test'])==0:
+#         data[t]['test'] = data[t]['train']
+#         data[t]['valid'] = data[t]['test']
+#         data[t]['train'] = data[t]['train']
 # ----------------------------------------------------------------------
 # Start Training.
 # ----------------------------------------------------------------------
 
 for t,ncla in taskcla:
-
-
+    # print(t, len(data[t]['train']), len(data[t]['valid']), len(data[t]['test']))
+    # continue
     if args.eval_each_step:
         args.resume_from_aux_file = base_resume_from_aux_file + 'steps'+str(t)
         args.resume_from_file = base_resume_from_file + 'steps'+str(t)
         resume_checkpoint(appr)
-
+    
     # print('*'*100)
     # print('Task {:2d} ({:s})'.format(t,data[t]['name']))
     # print('*'*100)
@@ -247,6 +257,7 @@ for t,ncla in taskcla:
     # else:
     #     test_set = t+1
     test_set = args.ntasks
+    # test_set = 1
     for u in range(test_set):
 
         test=data[u]['test']

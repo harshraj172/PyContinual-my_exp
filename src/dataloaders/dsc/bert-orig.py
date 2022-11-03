@@ -25,12 +25,12 @@ import math
 #            'Patio_Lawn_and_Garden','Office_Products','Musical_Instruments','Movies_and_TV',
 #            'Kindle_Store']
 
-# domains = ['derogation', 'animosity', 'dehumanization', 'threatening', 'support']
+domains = ['derogation', 'animosity', 'dehumanization', 'threatening', 'support']
 
-domains = ['other.glorification', 'wc', 'bla.man', 'old.people', 'notargetrecorded', 'asi.chin', 'bla',
- 'arab', 'bla.wom', 'trans', 'indig.wom', 'indig', 'for', 'gay.wom', 'asi.east', 'asylum', 'eastern.europe', 'hispanic', 'trav', 'jew', 'ref',
- 'asi.pak', 'bis', 'nazis', 'mus.wom', 'asi.south', 'gendermin', 'hitler', 'immig', 'asi.man', 'wom', 'non.white.wom', 'non.white', 'gay.man',
- 'mus', 'mixed.race', 'asi', 'asi.wom', 'other.national', 'other.religion', 'pol', 'african', 'dis', 'russian', 'gay', 'lgbtq', 'ethnic.minority']
+# domains = ['other.glorification', 'wc', 'bla.man', 'old.people', 'notargetrecorded', 'asi.chin', 'bla',
+#  'arab', 'bla.wom', 'trans', 'indig.wom', 'indig', 'for', 'gay.wom', 'asi.east', 'asylum', 'eastern.europe', 'hispanic', 'trav', 'jew', 'ref',
+#  'asi.pak', 'bis', 'nazis', 'mus.wom', 'asi.south', 'gendermin', 'hitler', 'immig', 'asi.man', 'wom', 'non.white.wom', 'non.white', 'gay.man',
+#  'mus', 'mixed.race', 'asi', 'asi.wom', 'other.national', 'other.religion', 'pol', 'african', 'dis', 'russian', 'gay', 'lgbtq', 'ethnic.minority']
 
 def get(logger=None,args=None):
     datasets = [ f'./dat/ssc/{args.domain_type}/'+domain for domain in domains]
@@ -97,17 +97,17 @@ def get(logger=None,args=None):
         logger.info("  Batch size = %d", args.train_batch_size)
         logger.info("  Num steps = %d", num_train_steps)
 
-#         all_input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long)
-#         all_segment_ids = torch.tensor([f.segment_ids for f in train_features], dtype=torch.long)
-#         all_input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long)
-#         all_label_ids = torch.tensor([f.label_id for f in train_features], dtype=torch.long)
-#         all_tasks = torch.tensor([t for f in train_features], dtype=torch.long)
+        all_input_ids = torch.tensor([f.input_ids for f in train_features], dtype=torch.long)
+        all_segment_ids = torch.tensor([f.segment_ids for f in train_features], dtype=torch.long)
+        all_input_mask = torch.tensor([f.input_mask for f in train_features], dtype=torch.long)
+        all_label_ids = torch.tensor([f.label_id for f in train_features], dtype=torch.long)
+        all_tasks = torch.tensor([t for f in train_features], dtype=torch.long)
 
-#         train_data = TensorDataset(all_input_ids, all_segment_ids, all_input_mask, all_label_ids, all_tasks)
+        train_data = TensorDataset(all_input_ids, all_segment_ids, all_input_mask, all_label_ids, all_tasks)
 
 
-        # data[t]['train'] = train_data
-        # data[t]['num_train_steps']=num_train_steps
+        data[t]['train'] = train_data
+        data[t]['num_train_steps']=num_train_steps
 
         valid_examples = processor.get_dev_examples(dataset)
         # No need to change valid for DSC
@@ -117,20 +117,20 @@ def get(logger=None,args=None):
 
         valid_features=data_utils.convert_examples_to_features_dsc(
             valid_examples, label_list, args.max_seq_length, tokenizer, "dsc")
-#         valid_all_input_ids = torch.tensor([f.input_ids for f in valid_features], dtype=torch.long)
-#         valid_all_segment_ids = torch.tensor([f.segment_ids for f in valid_features], dtype=torch.long)
-#         valid_all_input_mask = torch.tensor([f.input_mask for f in valid_features], dtype=torch.long)
-#         valid_all_label_ids = torch.tensor([f.label_id for f in valid_features], dtype=torch.long)
-#         valid_all_tasks = torch.tensor([t for f in valid_features], dtype=torch.long)
+        valid_all_input_ids = torch.tensor([f.input_ids for f in valid_features], dtype=torch.long)
+        valid_all_segment_ids = torch.tensor([f.segment_ids for f in valid_features], dtype=torch.long)
+        valid_all_input_mask = torch.tensor([f.input_mask for f in valid_features], dtype=torch.long)
+        valid_all_label_ids = torch.tensor([f.label_id for f in valid_features], dtype=torch.long)
+        valid_all_tasks = torch.tensor([t for f in valid_features], dtype=torch.long)
 
-#         valid_data = TensorDataset(valid_all_input_ids, valid_all_segment_ids, valid_all_input_mask, valid_all_label_ids, valid_all_tasks)
+        valid_data = TensorDataset(valid_all_input_ids, valid_all_segment_ids, valid_all_input_mask, valid_all_label_ids, valid_all_tasks)
 
         logger.info("***** Running validations *****")
         logger.info("  Num orig examples = %d", len(valid_examples))
         logger.info("  Num split examples = %d", len(valid_features))
         logger.info("  Batch size = %d", args.train_batch_size)
 
-        # data[t]['valid']=valid_data
+        data[t]['valid']=valid_data
 
 
         processor = data_utils.DscProcessor()
@@ -143,34 +143,17 @@ def get(logger=None,args=None):
         logger.info("***** Running evaluation *****")
         logger.info("  Num examples = %d", len(eval_examples))
         logger.info("  Batch size = %d", args.eval_batch_size)
-#         all_input_ids = torch.tensor([f.input_ids for f in eval_features], dtype=torch.long)
-#         all_segment_ids = torch.tensor([f.segment_ids for f in eval_features], dtype=torch.long)
-#         all_input_mask = torch.tensor([f.input_mask for f in eval_features], dtype=torch.long)
-#         all_label_ids = torch.tensor([f.label_id for f in eval_features], dtype=torch.long)
-#         all_tasks = torch.tensor([t for f in eval_features], dtype=torch.long)
+        all_input_ids = torch.tensor([f.input_ids for f in eval_features], dtype=torch.long)
+        all_segment_ids = torch.tensor([f.segment_ids for f in eval_features], dtype=torch.long)
+        all_input_mask = torch.tensor([f.input_mask for f in eval_features], dtype=torch.long)
+        all_label_ids = torch.tensor([f.label_id for f in eval_features], dtype=torch.long)
+        all_tasks = torch.tensor([t for f in eval_features], dtype=torch.long)
 
-#         eval_data = TensorDataset(all_input_ids, all_segment_ids, all_input_mask, all_label_ids, all_tasks)
+        eval_data = TensorDataset(all_input_ids, all_segment_ids, all_input_mask, all_label_ids, all_tasks)
         # Run prediction for full data
 
-        # data[t]['test']=eval_data
-        
-        #**************************************************************
-        features = train_features+valid_features+eval_features
-        all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long)
-        all_segment_ids = torch.tensor([f.segment_ids for f in features], dtype=torch.long)
-        all_input_mask = torch.tensor([f.input_mask for f in features], dtype=torch.long)
-        all_label_ids = torch.tensor([f.label_id for f in features], dtype=torch.long)
-        all_tasks = torch.tensor([t for f in features], dtype=torch.long)
-        
-        div_1, div_2, div_3 = int(len(all_input_ids)*0.8), int(len(all_input_ids)*0.9), len(all_input_ids) 
-        train_data = TensorDataset(all_input_ids[:div_1], all_segment_ids[:div_1], all_input_mask[:div_1], all_label_ids[:div_1], all_tasks[:div_1])
-        valid_data = TensorDataset(all_input_ids[div_1:div_2], all_segment_ids[div_1:div_2], all_input_mask[div_1:div_2], all_label_ids[div_1:div_2], all_tasks[div_1:div_2])
-        eval_data = TensorDataset(all_input_ids[div_2:div_3], all_segment_ids[div_2:div_3], all_input_mask[div_2:div_3], all_label_ids[div_2:div_3], all_tasks[div_2:div_3])
-
-        data[t]['train'] = train_data
-        data[t]['num_train_steps']=num_train_steps
-        data[t]['valid']=valid_data
         data[t]['test']=eval_data
+
         taskcla.append((t,int(data[t]['ncla'])))
 
 
@@ -183,3 +166,5 @@ def get(logger=None,args=None):
 
 
     return data,taskcla
+
+

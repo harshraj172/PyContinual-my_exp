@@ -201,5 +201,5 @@ class Appr(ApprBase):
 
                 # break
 
-        return total_loss/total_num,total_acc/total_num,f1
+        return target_list, pred_list, total_loss/total_num,total_acc/total_num,f1
 

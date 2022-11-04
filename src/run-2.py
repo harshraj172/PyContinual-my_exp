@@ -103,37 +103,22 @@ if args.print_report:
 
 
 acc, lss, f1_macro = np.array([[0.0]*args.ntasks]*args.ntasks), np.array([[0.0]*args.ntasks]*args.ntasks), np.array([[0.0]*args.ntasks]*args.ntasks)
-# # impute if len(test/valid) is 0 
-# for t,ncla in taskcla:
-#     if len(data[t]['test'])==0 and len(data[t]['valid'])!=0:
-#         data[t]['test'] = data[t]['valid']
-#     elif len(data[t]['valid'])==0 and len(data[t]['test'])!=0:
-#         data[t]['valid'] = data[t]['test']
-#     elif len(data[t]['valid'])==0 and len(data[t]['test'])==0:
-#         data[t]['test'] = data[t]['train']
-#         data[t]['valid'] = data[t]['test']
-#         data[t]['train'] = data[t]['train']
+
 # ----------------------------------------------------------------------
 # Start Training.
 # ----------------------------------------------------------------------
 
 for t,ncla in taskcla:
-    # print(t, len(data[t]['train']), len(data[t]['valid']), len(data[t]['test']))
-    # continue
+
     if args.eval_each_step:
         args.resume_from_aux_file = base_resume_from_aux_file + 'steps'+str(t)
         args.resume_from_file = base_resume_from_file + 'steps'+str(t)
         resume_checkpoint(appr)
     
-    # print('*'*100)
-    # print('Task {:2d} ({:s})'.format(t,data[t]['name']))
-    # print('*'*100)
-    #
     logger.info('*'*100)
     logger.info('Task {:2d} ({:s})'.format(t,data[t]['name']))
     logger.info('*'*100)
 
-    # if t>1: exit()
 
     if 'mtl' in args.baseline:
         # Get data. We do not put it to GPU
@@ -282,7 +267,7 @@ for t,ncla in taskcla:
                 logger.info('>>> Test on task {:2d} - {:15s}: loss={:.3f}, acc={:5.1f}% <<<'.format(u,data[u]['name'],test_loss,100*test_acc))
 
             else:
-                test_loss,test_acc,test_f1_macro=appr.eval(u,test_dataloader,test,trained_task=t)
+                target_list,pred_list,test_loss,test_acc,test_f1_macro=appr.eval(u,test_dataloader,test,trained_task=t)
                 logger.info('>>> Test on task {:2d} - {:15s}: loss={:.3f}, acc={:5.1f}% <<<'.format(u,data[u]['name'],test_loss,100*test_acc))
 
 
@@ -294,6 +279,13 @@ for t,ncla in taskcla:
 
             # Save
             print('Save at '+args.output)
+            import pandas as pd
+            labels_df = pd.DataFrame({
+                "Data": test,
+                "Target": target_list,
+                "Predicted": pred_list,
+            }) 
+            labels_df.to_csv(f"{args.output.split('.')[0]}-{args.domain_type}.csv", index=False)
             np.savetxt(args.output + 'progressive.acc',acc,'%.4f',delimiter='\t')
             np.savetxt(args.output + 'progressive.f1_macro',f1_macro,'%.4f',delimiter='\t')
 

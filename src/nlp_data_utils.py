@@ -203,15 +203,16 @@ class DscProcessor(DataProcessor):
 
     def _create_examples(self, lines, set_type):
         """Creates examples for the training and dev sets."""
-        examples = []
+        examples, examples_text = [], []
         for (i, ids) in enumerate(lines):
             guid = "%s-%s" % (set_type, ids )
             text_a = lines[ids]['sentence']
+            examples_text.append(text_a)
             text_b = None
             label = lines[ids]['polarity']
             examples.append(
                 InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label))
-        return examples
+        return examples_text, examples
 
 
 

@@ -119,7 +119,7 @@ for t,ncla in taskcla:
     logger.info('Task {:2d} ({:s})'.format(t,data[t]['name']))
     logger.info('*'*100)
 
-
+    
     if 'mtl' in args.baseline:
         # Get data. We do not put it to GPU
         if t==0:
@@ -242,6 +242,8 @@ for t,ncla in taskcla:
     # else:
     #     test_set = t+1
     test_set = args.ntasks
+    import pandas as pd
+    labels_df = pd.DataFrame()
     # test_set = 1
     for u in range(test_set):
 
@@ -279,13 +281,13 @@ for t,ncla in taskcla:
 
             # Save
             print('Save at '+args.output)
-            import pandas as pd
-            labels_df = pd.DataFrame({
-                "Data": test,
-                "Target": target_list,
-                "Predicted": pred_list,
+            tmp_labels_df = pd.DataFrame({
+                f"Data-{u}": data[u]['test_examples_text'],
+                f"Target-{u}": target_list,
+                f"Predicted-{u}": pred_list,
             }) 
-            labels_df.to_csv(f"{args.output.split('.')[0]}-{args.domain_type}.csv", index=False)
+            labels_df = pd.concat([labels_df, tmp_labels_df], axis=1)
+            labels_df.to_csv(f"{args.output}-{args.domain_type}-task{t}.csv", index=False)
             np.savetxt(args.output + 'progressive.acc',acc,'%.4f',delimiter='\t')
             np.savetxt(args.output + 'progressive.f1_macro',f1_macro,'%.4f',delimiter='\t')
 

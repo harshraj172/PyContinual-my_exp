@@ -69,7 +69,7 @@ class Appr(ApprBase):
             global_step=self.train_epoch(t,train,iter_bar, optimizer,t_total,global_step,e)
             clock1=time.time()
 
-            train_loss,train_acc,train_f1_macro=self.eval(t,train,trained_task=t)
+            target_list,pred_list,train_loss,train_acc,train_f1_macro=self.eval(t,train,trained_task=t)
             clock2=time.time()
             self.logger.info('| Epoch {:3d}, time={:5.1f}ms/{:5.1f}ms | Train: loss={:.3f}, acc={:5.1f}% |'.format(e+1,
                 1000*self.train_batch_size*(clock1-clock0)/len(train),1000*self.train_batch_size*(clock2-clock1)/len(train),train_loss,100*train_acc))
@@ -77,7 +77,7 @@ class Appr(ApprBase):
             # print('| Epoch {:3d}, time={:5.1f}ms/{:5.1f}ms | Train: loss={:.3f}, acc={:5.1f}% |'.format(e+1,
             #     1000*self.train_batch_size*(clock1-clock0)/len(train),1000*self.train_batch_size*(clock2-clock1)/len(train),train_loss,100*train_acc),end='')
 
-            valid_loss,valid_acc,valid_f1_macro=self.eval(t,valid,trained_task=t)
+            target_list,pred_list,valid_loss,valid_acc,valid_f1_macro=self.eval(t,valid,trained_task=t)
             self.logger.info(' Valid: loss={:.3f}, acc={:5.1f}% |'.format(valid_loss,100*valid_acc))
 
             # print(' Valid: loss={:.3f}, acc={:5.1f}% |'.format(valid_loss,100*valid_acc),end='')
@@ -262,7 +262,8 @@ class Appr(ApprBase):
             f1=self.f1_compute_fn(y_pred=torch.cat(pred_list,0),y_true=torch.cat(target_list,0),average='macro')
 
 
-        return total_loss/total_num,total_acc/total_num,f1
+        return torch.cat(target_list,0).detach().cpu().numpy(),torch.cat(pred_list,0).detach().cpu().numpy(),\
+    total_loss/total_num,total_acc/total_num,f1
 
 
 

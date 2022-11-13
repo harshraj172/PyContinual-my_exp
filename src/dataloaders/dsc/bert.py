@@ -25,12 +25,12 @@ import math
 #            'Patio_Lawn_and_Garden','Office_Products','Musical_Instruments','Movies_and_TV',
 #            'Kindle_Store']
 
-# domains = ['derogation', 'animosity', 'dehumanization', 'threatening', 'support']
+domains = ['derogation', 'animosity', 'dehumanization', 'threatening', 'support']
 
-domains = ['other.glorification', 'wc', 'bla.man', 'old.people', 'notargetrecorded', 'asi.chin', 'bla',
- 'arab', 'bla.wom', 'trans', 'indig.wom', 'indig', 'for', 'gay.wom', 'asi.east', 'asylum', 'eastern.europe', 'hispanic', 'trav', 'jew', 'ref',
- 'asi.pak', 'bis', 'nazis', 'mus.wom', 'asi.south', 'gendermin', 'hitler', 'immig', 'asi.man', 'wom', 'non.white.wom', 'non.white', 'gay.man',
- 'mus', 'mixed.race', 'asi', 'asi.wom', 'other.national', 'other.religion', 'pol', 'african', 'dis', 'russian', 'gay', 'lgbtq', 'ethnic.minority']
+# domains = ['other.glorification', 'wc', 'bla.man', 'old.people', 'notargetrecorded', 'asi.chin', 'bla',
+#  'arab', 'bla.wom', 'trans', 'indig.wom', 'indig', 'for', 'gay.wom', 'asi.east', 'asylum', 'eastern.europe', 'hispanic', 'trav', 'jew', 'ref',
+#  'asi.pak', 'bis', 'nazis', 'mus.wom', 'asi.south', 'gendermin', 'hitler', 'immig', 'asi.man', 'wom', 'non.white.wom', 'non.white', 'gay.man',
+#  'mus', 'mixed.race', 'asi', 'asi.wom', 'other.national', 'other.religion', 'pol', 'african', 'dis', 'russian', 'gay', 'lgbtq', 'ethnic.minority']
 
 def get(logger=None,args=None):
     datasets = [ f'./dat/ssc/{args.domain_type}/'+domain for domain in domains]
@@ -63,11 +63,12 @@ def get(logger=None,args=None):
         label_list = processor.get_labels()
         print(f"BERT Model : {args.bert_model}")
         tokenizer = ABSATokenizer.from_pretrained(args.bert_model)
-        train_examples = processor.get_train_examples(dataset)
+        train_examples_text, train_examples = processor.get_train_examples(dataset)
 
         if args.train_data_size > 0: #TODO: for replicated results, better do outside (in prep_dsc.py), so that can save as a file
             random.Random(args.data_seed).shuffle(train_examples) #more robust
             train_examples = train_examples[:args.train_data_size]
+            train_examples_text = train_examples_text[:args.train_data_size]
 
         #TODO: to be conssitent, sometimes we want to convert it back and save
         # with open('./dat/dsc/'+random_sep[t]+'/train_'+str(args.train_data_size),'w') as fw:
@@ -109,7 +110,7 @@ def get(logger=None,args=None):
         # data[t]['train'] = train_data
         # data[t]['num_train_steps']=num_train_steps
 
-        valid_examples = processor.get_dev_examples(dataset)
+        valid_examples_text, valid_examples = processor.get_dev_examples(dataset)
         # No need to change valid for DSC
         # if args.dev_data_size > 0:
         #     random.Random(args.data_seed).shuffle(valid_examples) #more robust
@@ -136,7 +137,7 @@ def get(logger=None,args=None):
         processor = data_utils.DscProcessor()
         label_list = processor.get_labels()
         tokenizer = BertTokenizer.from_pretrained(args.bert_model)
-        eval_examples = processor.get_test_examples(dataset)
+        eval_examples_text, eval_examples = processor.get_test_examples(dataset)
 
         eval_features = data_utils.convert_examples_to_features_dsc(eval_examples, label_list, args.max_seq_length, tokenizer, "dsc")
 
@@ -156,6 +157,7 @@ def get(logger=None,args=None):
         
         #**************************************************************
         features = train_features+valid_features+eval_features
+        examples_text = train_examples_text+valid_examples_text+eval_examples_text
         all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long)
         all_segment_ids = torch.tensor([f.segment_ids for f in features], dtype=torch.long)
         all_input_mask = torch.tensor([f.input_mask for f in features], dtype=torch.long)
@@ -171,6 +173,7 @@ def get(logger=None,args=None):
         data[t]['num_train_steps']=num_train_steps
         data[t]['valid']=valid_data
         data[t]['test']=eval_data
+        data[t]['test_examples_text']=examples_text[div_2:div_3]
         taskcla.append((t,int(data[t]['ncla'])))
 
 
